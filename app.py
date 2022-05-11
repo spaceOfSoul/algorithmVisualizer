@@ -1,5 +1,6 @@
 import pygame as pg
 import random
+import math
 
 pg.init()
 
@@ -7,8 +8,8 @@ class DrawInformation:
     BLACK = 0,0,0
     WHITE = 255,255,255
     GREEN = 0,255,0
-    RED = 128, 128, 128
-    BACKGROUNDCOLOR = WHITE
+    RED = 255, 0, 0
+    BACKGROUNDCOLOR = BLACK
     
     GRADIENT = [
         (128,128,128)#gray
@@ -16,6 +17,8 @@ class DrawInformation:
         ,(192,192,192)
     ]
     
+    FONT = pg.font.SysFont('arial',20)
+    LARGE_FONT = pg.font.SysFont('arial',30)
     SIDE_PAD = 100
     TOP_PAD = 150
     
@@ -33,16 +36,28 @@ class DrawInformation:
         self.max_val = max(lst)
         
         self.block_width = round((self.width - self.SIDE_PAD)/ len(lst))
-        self.block_height = round((self.height - self.TOP_PAD) / (self.max_val - self.min_val))
+        self.block_height = math.floor((self.height - self.TOP_PAD) / (self.max_val - self.min_val))
         self.start_x = self.SIDE_PAD //2
         
 def draw(draw_info : DrawInformation):
     draw_info.window.fill(draw_info.BACKGROUNDCOLOR)
+    
+    control = draw_info.FONT.render("R - Reroll | SPACE - Start sorting | A - ascending and descending",1,draw_info.WHITE)
+    draw_info.window.blit(control, (draw_info.width/2 - control.get_width()/2 ,5))
+    
+    sortings = draw_info.FONT.render("I - Insertion Sort | B - Bubble sort ",1,draw_info.WHITE)
+    draw_info.window.blit(sortings, (draw_info.width/2 - sortings.get_width()/2 ,35))
+    
     draw_list(draw_info)
     pg.display.update()
     
-def draw_list(draw_info : DrawInformation):
+def draw_list(draw_info : DrawInformation, color_position={}, clear_bg=False):
     lst = draw_info.lst
+    
+    if clear_bg:
+        clear_rect = (draw_info.SIDE_PAD//2, draw_info.TOP_PAD, 
+                      draw_info.width - draw_info.SIDE_PAD, draw_info.height - draw_info.TOP_PAD)
+        pg.draw.rect(draw_info.window, draw_info.BACKGROUNDCOLOR, clear_rect)
     
     for i, val in enumerate(lst):
         x = draw_info.start_x + i * draw_info.block_width
@@ -50,13 +65,31 @@ def draw_list(draw_info : DrawInformation):
         
         color = draw_info.GRADIENT[i%3]
         
+        if i in color_position:
+            color = color_position[i]
+        
         pg.draw.rect(draw_info.window, color, (x, y, draw_info.block_width, draw_info.height))
+    
+    if clear_bg:
+        pg.display.update()
 
 def generate_starting_list(n, minVal, maxVal):
     lst = []
     for _ in range(n):
         val = random.randint(minVal, maxVal)
         lst.append(val)
+    return lst
+
+def bubble_sort(draw_info, ascending = True):
+    lst = draw_info.lst
+    
+    length = len(lst)
+    for i in range(length-1):
+        for j in range(length - 1,i,-1):
+            if (lst[j-1] > lst[j] and ascending) or (lst[j-1] < lst[j] and not ascending):
+                lst[j-1], lst[j] = lst[j], lst[j-1]
+                draw_list(draw_info, {j: draw_info.GREEN, j-1 : draw_info.RED}, True)
+                yield True
     return lst
 
 def main():
@@ -69,15 +102,41 @@ def main():
     
     lst = generate_starting_list(n,min_val,max_val)
     draw_info = DrawInformation(800,600, lst)
+    sorting = False
+    ascending = True
+    
+    sorting_algorithm = bubble_sort
+    sorting_algorithm_name = "Bubble_sort"
+    sorting_algorithm_generator = None
     
     while run:
         clock.tick(60)#fps
         
-        draw(draw_info)
+        if sorting:
+            try:
+                next(sorting_algorithm_generator)
+            except StopIteration:
+                sorting = False
+        else:
+            draw(draw_info)
         
         for event in pg.event.get():
-            if event == pg.QUIT:
+            if event.type == pg.QUIT:
                 run = False
+                
+            if event.type != pg.KEYDOWN:
+                continue
+            
+            if event.key == pg.K_r:
+                lst = generate_starting_list(n,min_val,max_val)
+                draw_info.set_list(lst)
+                sorting = False
+            elif event.key == pg.K_SPACE and not sorting:
+                sorting = True
+                sorting_algorithm_generator = sorting_algorithm(draw_info,ascending)
+            elif event.key == pg.K_a and not sorting:
+                ascending = not ascending
+                
             
     pg.quit()
 
