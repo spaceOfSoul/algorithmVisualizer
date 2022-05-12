@@ -35,18 +35,21 @@ class DrawInformation:
         self.min_val = min(lst)
         self.max_val = max(lst)
         
-        self.block_width = round((self.width - self.SIDE_PAD)/ len(lst))
+        self.block_width = math.floor((self.width - self.SIDE_PAD)/ len(lst))
         self.block_height = math.floor((self.height - self.TOP_PAD) / (self.max_val - self.min_val))
         self.start_x = self.SIDE_PAD //2
         
-def draw(draw_info : DrawInformation):
+def draw(draw_info : DrawInformation,algo_name, ascending):
     draw_info.window.fill(draw_info.BACKGROUNDCOLOR)
     
+    title = draw_info.LARGE_FONT.render(f"{algo_name} - {'ascending' if ascending else 'descending'}",1,draw_info.WHITE)
+    draw_info.window.blit(title, (draw_info.width/2 - title.get_width()/2 ,5))
+    
     control = draw_info.FONT.render("R - Reroll | SPACE - Start sorting | A - ascending and descending",1,draw_info.WHITE)
-    draw_info.window.blit(control, (draw_info.width/2 - control.get_width()/2 ,5))
+    draw_info.window.blit(control, (draw_info.width/2 - control.get_width()/2 ,35))
     
     sortings = draw_info.FONT.render("I - Insertion Sort | B - Bubble sort ",1,draw_info.WHITE)
-    draw_info.window.blit(sortings, (draw_info.width/2 - sortings.get_width()/2 ,35))
+    draw_info.window.blit(sortings, (draw_info.width/2 - sortings.get_width()/2 ,65))
     
     draw_list(draw_info)
     pg.display.update()
@@ -80,6 +83,7 @@ def generate_starting_list(n, minVal, maxVal):
         lst.append(val)
     return lst
 
+#sorting algorithms---------------------------------------------------
 def bubble_sort(draw_info, ascending = True):
     lst = draw_info.lst
     
@@ -92,11 +96,32 @@ def bubble_sort(draw_info, ascending = True):
                 yield True
     return lst
 
+def insertion_sort(draw_info, acsending = True):
+    lst = draw_info.lst
+    length = len(lst)
+    
+    for i in range(1, length):
+        current = lst[i]
+        
+        while(True):
+            acsending_sort  = i > 0 and lst[i-1] > current and acsending
+            decsending_sort  = i > 0 and lst[i-1] < current and not acsending
+            
+            if not acsending_sort and not decsending_sort:
+                break
+            lst[i] = lst[i-1]
+            i = i-1
+            lst[i] = current
+            draw_list(draw_info, {i-1: draw_info.GREEN, i : draw_info.RED}, True)
+            yield True
+    return lst
+
+#---------------------------------------------------------------------
 def main():
     run = True
     clock = pg.time.Clock()
     
-    n = 50
+    n = 100
     min_val = 0
     max_val = 100
     
@@ -110,7 +135,7 @@ def main():
     sorting_algorithm_generator = None
     
     while run:
-        clock.tick(60)#fps
+        clock.tick(120)#fps
         
         if sorting:
             try:
@@ -118,7 +143,7 @@ def main():
             except StopIteration:
                 sorting = False
         else:
-            draw(draw_info)
+            draw(draw_info, sorting_algorithm_name, ascending)
         
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -136,7 +161,12 @@ def main():
                 sorting_algorithm_generator = sorting_algorithm(draw_info,ascending)
             elif event.key == pg.K_a and not sorting:
                 ascending = not ascending
-                
+            elif event.key == pg.K_b and not sorting:
+                sorting_algorithm = bubble_sort
+                sorting_algorithm_name = "Bubble_sort"
+            elif event.key == pg.K_i and not sorting:
+                sorting_algorithm = insertion_sort
+                sorting_algorithm_name = "Insert_sort"
             
     pg.quit()
 
