@@ -32,11 +32,9 @@ class DrawInformation:
     
     def set_list(self, lst):
         self.lst = lst
-        self.min_val = min(lst)
-        self.max_val = max(lst)
-        
-        self.block_width = math.floor((self.width - self.SIDE_PAD)/ len(lst))
-        self.block_height = math.floor((self.height - self.TOP_PAD) / (self.max_val - self.min_val))
+        n = len(lst)
+        self.block_width = math.floor((self.width - self.SIDE_PAD)/ n)
+        self.block_height = math.floor((self.height - self.TOP_PAD) / n)
         self.start_x = self.SIDE_PAD //2
         
 def draw(draw_info : DrawInformation,algo_name, ascending):
@@ -63,7 +61,7 @@ def draw_list(draw_info : DrawInformation, lst, color_position={}, clear_bg=Fals
     
     for i, val in enumerate(lst):
         x = draw_info.start_x + i * draw_info.block_width
-        y = draw_info.height - (val - draw_info.min_val) * draw_info.block_height
+        y = draw_info.height - val * draw_info.block_height
         
         color = draw_info.GRADIENT[i%3]
         
@@ -75,11 +73,9 @@ def draw_list(draw_info : DrawInformation, lst, color_position={}, clear_bg=Fals
     if clear_bg:
         pg.display.update()
 
-def generate_starting_list(n, minVal, maxVal):
-    lst = []
-    for _ in range(n):
-        val = random.randint(minVal, maxVal)
-        lst.append(val)
+def generate_starting_list(n):
+    lst = [i for i in range(n)]
+    random.shuffle(lst)
     return lst
 
 #sorting algorithms---------------------------------------------------
@@ -115,8 +111,6 @@ def insertion_sort(draw_info, acsending = True):
             yield True
     return lst
 
-
-
 def quick_sort(draw_info, acsending = True):
     def qsort(draw_info,lst,left,right,asc):
         pl = left
@@ -138,18 +132,17 @@ def quick_sort(draw_info, acsending = True):
 
         if left <pr: qsort(draw_info,lst, left, pr,asc)
         if pl < right: qsort(draw_info,lst, pl,right,asc)
-    qsort(draw_info,draw_info.lst,0,len(draw_info.lst)-1,acsending)
+        return True
+    yield qsort(draw_info,draw_info.lst,0,len(draw_info.lst)-1,acsending)
 
 #---------------------------------------------------------------------
 def main():
     run = True
     clock = pg.time.Clock()
     
-    n = 100
-    min_val = 0
-    max_val = 100
+    n = 200
     
-    lst = generate_starting_list(n,min_val,max_val)
+    lst = generate_starting_list(n)
     draw_info = DrawInformation(800,600, lst)
     sorting = False
     ascending = True
@@ -159,12 +152,12 @@ def main():
     sorting_algorithm_generator = None
     
     while run:
-        clock.tick(30)#fps
+        clock.tick(120)#fps
         
         if sorting:
             try:
                 next(sorting_algorithm_generator)
-            except:
+            except StopIteration:
                 sorting = False
         else:
             draw(draw_info, sorting_algorithm_name, ascending)
@@ -177,7 +170,7 @@ def main():
                 continue
             
             if event.key == pg.K_r:
-                lst = generate_starting_list(n,min_val,max_val)
+                lst = generate_starting_list(n)
                 draw_info.set_list(lst)
                 sorting = False
             elif event.key == pg.K_SPACE and not sorting:
