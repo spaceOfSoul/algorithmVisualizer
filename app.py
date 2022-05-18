@@ -48,14 +48,13 @@ def draw(draw_info : DrawInformation,algo_name, ascending):
     control = draw_info.FONT.render("R - Reroll | SPACE - Start sorting | A - ascending and descending",1,draw_info.WHITE)
     draw_info.window.blit(control, (draw_info.width/2 - control.get_width()/2 ,35))
     
-    sortings = draw_info.FONT.render("I - Insertion Sort | B - Bubble sort ",1,draw_info.WHITE)
+    sortings = draw_info.FONT.render("I - Insertion Sort | B - Bubble sort | Q - Qucik sort",1,draw_info.WHITE)
     draw_info.window.blit(sortings, (draw_info.width/2 - sortings.get_width()/2 ,65))
     
-    draw_list(draw_info)
+    draw_list(draw_info, draw_info.lst)
     pg.display.update()
     
-def draw_list(draw_info : DrawInformation, color_position={}, clear_bg=False):
-    lst = draw_info.lst
+def draw_list(draw_info : DrawInformation, lst, color_position={}, clear_bg=False):
     
     if clear_bg:
         clear_rect = (draw_info.SIDE_PAD//2, draw_info.TOP_PAD, 
@@ -92,7 +91,7 @@ def bubble_sort(draw_info, ascending = True):
         for j in range(length - 1,i,-1):
             if (lst[j-1] > lst[j] and ascending) or (lst[j-1] < lst[j] and not ascending):
                 lst[j-1], lst[j] = lst[j], lst[j-1]
-                draw_list(draw_info, {j: draw_info.GREEN, j-1 : draw_info.RED}, True)
+                draw_list(draw_info,lst, {j: draw_info.GREEN, j-1 : draw_info.RED}, True)
                 yield True
     return lst
 
@@ -112,9 +111,34 @@ def insertion_sort(draw_info, acsending = True):
             lst[i] = lst[i-1]
             i = i-1
             lst[i] = current
-            draw_list(draw_info, {i-1: draw_info.GREEN, i : draw_info.RED}, True)
+            draw_list(draw_info,lst, {i-1: draw_info.GREEN, i : draw_info.RED}, True)
             yield True
     return lst
+
+
+
+def quick_sort(draw_info, acsending = True):
+    def qsort(draw_info,lst,left,right,asc):
+        pl = left
+        pr = right
+        x = lst[(left + right) // 2]
+    
+        while pl <= pr:
+            if asc:
+                while lst[pl] < x: pl += 1
+                while lst[pr] > x: pr -= 1
+            else:
+                while lst[pl] > x: pl += 1
+                while lst[pr] < x: pr -= 1
+            if pl<=pr:
+                lst[pl],lst[pr] = lst[pr],lst[pl]
+                draw_list(draw_info,lst, {pl: draw_info.GREEN, pr : draw_info.RED}, True)
+                pl+=1
+                pr-=1
+
+        if left <pr: qsort(draw_info,lst, left, pr,asc)
+        if pl < right: qsort(draw_info,lst, pl,right,asc)
+    qsort(draw_info,draw_info.lst,0,len(draw_info.lst)-1,acsending)
 
 #---------------------------------------------------------------------
 def main():
@@ -135,12 +159,12 @@ def main():
     sorting_algorithm_generator = None
     
     while run:
-        clock.tick(120)#fps
+        clock.tick(30)#fps
         
         if sorting:
             try:
                 next(sorting_algorithm_generator)
-            except StopIteration:
+            except:
                 sorting = False
         else:
             draw(draw_info, sorting_algorithm_name, ascending)
@@ -167,6 +191,9 @@ def main():
             elif event.key == pg.K_i and not sorting:
                 sorting_algorithm = insertion_sort
                 sorting_algorithm_name = "Insert_sort"
+            elif event.key == pg.K_q and not sorting:
+                sorting_algorithm = quick_sort
+                sorting_algorithm_name = "Quick_sort"
             
     pg.quit()
 
