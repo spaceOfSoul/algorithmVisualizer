@@ -46,7 +46,7 @@ def draw(draw_info : DrawInformation,algo_name, ascending):
     control = draw_info.FONT.render("R - Reroll | SPACE - Start sorting | A - ascending and descending",1,draw_info.WHITE)
     draw_info.window.blit(control, (draw_info.width/2 - control.get_width()/2 ,35))
     
-    sortings = draw_info.FONT.render("I - Insertion Sort | B - Bubble sort | Q - Qucik sort",1,draw_info.WHITE)
+    sortings = draw_info.FONT.render("I - Insertion Sort | B - Bubble sort | Q - Qucik sort | M - Merge sort",1,draw_info.WHITE)
     draw_info.window.blit(sortings, (draw_info.width/2 - sortings.get_width()/2 ,65))
     
     draw_list(draw_info, draw_info.lst)
@@ -112,7 +112,9 @@ def insertion_sort(draw_info, acsending = True):
     return lst
 
 def quick_sort(draw_info, acsending = True):
-    def qsort(draw_info,lst,left,right,asc):
+    lst = draw_info.lst
+    asc = acsending
+    def qsort(left,right):
         pl = left
         pr = right
         x = lst[(left + right) // 2]
@@ -130,10 +132,59 @@ def quick_sort(draw_info, acsending = True):
                 pl+=1
                 pr-=1
 
-        if left <pr: qsort(draw_info,lst, left, pr,asc)
-        if pl < right: qsort(draw_info,lst, pl,right,asc)
+        if left <pr: qsort( left, pr)
+        if pl < right: qsort( pl,right)
         return True
-    yield qsort(draw_info,draw_info.lst,0,len(draw_info.lst)-1,acsending)
+    yield qsort(0,len(lst)-1)
+    
+def merge_sort(draw_info, acsending = True):
+    lst = draw_info.lst
+    asc = acsending
+    def _merge_sort(left,right):
+        if left < right:
+            mid = (left+right)//2
+            
+            _merge_sort(left,mid)
+            _merge_sort(mid+1, right)
+            
+            p=j=0
+            i=k=left
+            
+            while i<=mid:
+                buff[p] = lst[i]
+                p+=1
+                i+=1
+            
+            while i <= right and j < p:
+                if asc:
+                    if buff[j] <= lst[i]:
+                        lst[k] = buff[j]
+                        j+=1
+                        draw_list(draw_info,lst, {k: draw_info.GREEN, j : draw_info.RED}, True)
+                    else:
+                        lst[k] = lst[i]
+                        i+=1
+                        draw_list(draw_info,lst, {k: draw_info.GREEN, i : draw_info.RED}, True)
+                else:
+                    if buff[j] >= lst[i]:
+                        lst[k] = buff[j]
+                        j+=1
+                        draw_list(draw_info,lst, {k: draw_info.GREEN, j : draw_info.RED}, True)
+                    else:
+                        lst[k] = lst[i]
+                        i+=1
+                        draw_list(draw_info,lst, {k: draw_info.GREEN, i : draw_info.RED}, True)
+                k+=1
+            
+            while j<p:
+                lst[k] = buff[j]
+                k += 1
+                j += 1
+        return True
+    
+    n=len(lst)
+    buff = [None]*n
+    yield _merge_sort(0,n-1)
 
 #---------------------------------------------------------------------
 def main():
@@ -152,7 +203,7 @@ def main():
     sorting_algorithm_generator = None
     
     while run:
-        clock.tick(120)#fps
+        clock.tick(60)#fps
         
         if sorting:
             try:
@@ -187,6 +238,9 @@ def main():
             elif event.key == pg.K_q and not sorting:
                 sorting_algorithm = quick_sort
                 sorting_algorithm_name = "Quick_sort"
+            elif event.key == pg.K_m and not sorting:
+                sorting_algorithm = merge_sort
+                sorting_algorithm_name = "Merge_sort"
             
     pg.quit()
 
