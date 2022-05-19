@@ -11,12 +11,6 @@ class DrawInformation:
     RED = 255, 0, 0
     BACKGROUNDCOLOR = BLACK
     
-    GRADIENT = [
-        (128,128,128)#gray
-        ,(160,160,160)
-        ,(192,192,192)
-    ]
-    
     FONT = pg.font.SysFont('arial',20)
     LARGE_FONT = pg.font.SysFont('arial',30)
     SIDE_PAD = 100
@@ -33,21 +27,22 @@ class DrawInformation:
     def set_list(self, lst):
         self.lst = lst
         n = len(lst)
-        self.block_width = math.floor((self.width - self.SIDE_PAD)/ n)
-        self.block_height = math.floor((self.height - self.TOP_PAD) / n)
+        self.block_width =(self.width - self.SIDE_PAD)/n
+        print(self.block_width)
+        self.block_height = (self.height - self.TOP_PAD) / n
         self.start_x = self.SIDE_PAD //2
         
 def draw(draw_info : DrawInformation,algo_name, ascending):
     draw_info.window.fill(draw_info.BACKGROUNDCOLOR)
     
     title = draw_info.LARGE_FONT.render(f"{algo_name} - {'ascending' if ascending else 'descending'}",1,draw_info.WHITE)
-    draw_info.window.blit(title, (draw_info.width/2 - title.get_width()/2 ,5))
+    draw_info.window.blit(title, (draw_info.width/2 - title.get_width()/2-350 ,5))
     
     control = draw_info.FONT.render("R - Reroll | SPACE - Start sorting | A - ascending and descending",1,draw_info.WHITE)
-    draw_info.window.blit(control, (draw_info.width/2 - control.get_width()/2 ,35))
+    draw_info.window.blit(control, (draw_info.width/2 - control.get_width()/2+250 ,5))
     
     sortings = draw_info.FONT.render("I - Insertion Sort | B - Bubble sort | Q - Qucik sort | M - Merge sort",1,draw_info.WHITE)
-    draw_info.window.blit(sortings, (draw_info.width/2 - sortings.get_width()/2 ,65))
+    draw_info.window.blit(sortings, (draw_info.width/2 - sortings.get_width()/2+250 ,35))
     
     draw_list(draw_info, draw_info.lst)
     pg.display.update()
@@ -63,7 +58,7 @@ def draw_list(draw_info : DrawInformation, lst, color_position={}, clear_bg=Fals
         x = draw_info.start_x + i * draw_info.block_width
         y = draw_info.height - val * draw_info.block_height
         
-        color = draw_info.GRADIENT[i%3]
+        color = draw_info.WHITE
         
         if i in color_position:
             color = color_position[i]
@@ -185,16 +180,18 @@ def merge_sort(draw_info, acsending = True):
     n=len(lst)
     buff = [None]*n
     yield _merge_sort(0,n-1)
+    
+    
 
 #---------------------------------------------------------------------
 def main():
     run = True
     clock = pg.time.Clock()
     
-    n = 200
+    n = 500
     
     lst = generate_starting_list(n)
-    draw_info = DrawInformation(800,600, lst)
+    draw_info = DrawInformation(1024,600, lst)
     sorting = False
     ascending = True
     
