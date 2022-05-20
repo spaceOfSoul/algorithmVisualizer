@@ -1,6 +1,5 @@
 import pygame as pg
 import random
-import math
 
 pg.init()
 
@@ -32,11 +31,14 @@ class DrawInformation:
         self.block_height = (self.height - self.TOP_PAD) / n
         self.start_x = self.SIDE_PAD //2
         
-def draw(draw_info : DrawInformation,algo_name, ascending):
+def draw(draw_info : DrawInformation,algo_name,frame, ascending):
     draw_info.window.fill(draw_info.BACKGROUNDCOLOR)
     
     title = draw_info.LARGE_FONT.render(f"{algo_name} - {'ascending' if ascending else 'descending'}",1,draw_info.WHITE)
     draw_info.window.blit(title, (draw_info.width/2 - title.get_width()/2-350 ,5))
+    
+    speed = draw_info.LARGE_FONT.render(f"x{frame/60}",1,draw_info.WHITE)
+    draw_info.window.blit(speed, (draw_info.width/2 - title.get_width()/2-350 ,35))
     
     control = draw_info.FONT.render("R - Reroll | SPACE - Start sorting | A - ascending and descending",1,draw_info.WHITE)
     draw_info.window.blit(control, (draw_info.width/2 - control.get_width()/2+250 ,5))
@@ -194,13 +196,14 @@ def main():
     draw_info = DrawInformation(1024,600, lst)
     sorting = False
     ascending = True
+    frame = 60
     
     sorting_algorithm = bubble_sort
     sorting_algorithm_name = "Bubble_sort"
     sorting_algorithm_generator = None
     
     while run:
-        clock.tick(60)#fps
+        clock.tick(frame)#fps
         
         if sorting:
             try:
@@ -208,7 +211,7 @@ def main():
             except StopIteration:
                 sorting = False
         else:
-            draw(draw_info, sorting_algorithm_name, ascending)
+            draw(draw_info, sorting_algorithm_name,frame, ascending)
         
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -238,6 +241,10 @@ def main():
             elif event.key == pg.K_m and not sorting:
                 sorting_algorithm = merge_sort
                 sorting_algorithm_name = "Merge_sort"
+            elif event.key == pg.K_UP and not sorting:
+                frame+=30
+            elif event.key == pg.K_DOWN and not sorting:
+                frame-=30
             
     pg.quit()
 
