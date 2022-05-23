@@ -1,9 +1,5 @@
 import pygame as pg
 import random
-# from tkinter import *
-# from tkinter import messagebox
-
-pg.init()
 
 class DrawInformation:
     BLACK = 0,0,0
@@ -188,33 +184,9 @@ def merge_sort(draw_info, acsending = True):
     buff = [None]*n
     yield _merge_sort(0,n-1)
     
-    
-
-#---------------------------------------------------------------------
-#messege box
-
-# amountPop = Tk()
-# amountPop.title("item amount")
-# amountPop.geometry("200x100")
-# amountPop.resizable(0,0) 
-# txt = Entry(amountPop)
-# txt.grid(row=0,column=1)
-# cmd = None
-# btn = Button(amountPop, text="ok",command=cmd,width=1,height=1)
-
-# def list_amount(a):
-#     amountPop.mainloop()
-    
-#     while True:
-#         n = txt.get()
-#         if n.isnumeric():
-#             a = int(n)
-#             amountPop.destroy()
-#             return
-# cmd = list_amount
-#---------------------------------------------------------------------
 
 def main():
+    pg.init()
     run = True
     clock = pg.time.Clock()
     
@@ -283,7 +255,7 @@ def main():
                 frame+=30
             elif event.key == pg.K_DOWN and not sorting:
                 frame-=30
-            
+      
     pg.quit()
 
 if __name__ == "__main__":

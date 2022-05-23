@@ -5,7 +5,20 @@ root = Tk()
 root.title("algorithm visualizer")
 root.geometry('400x300')
 
-btn_sort = Button(root, padx=10, pady=50,width=200, height=100, text="Sorting", command=sortingVisualze.main )
+pushed  = False
+
+def btn_push(func):
+    global pushed
+    if pushed:
+        print('window is not exist.')
+        return None
+    else:
+        pushed = True
+        return func
+
+btn_sort = Button(root, padx=10, pady=50, text="Sorting", command= btn_push(sortingVisualze.main ))
 btn_sort.pack()
+btn_traversal=Button(root, padx=10, pady=50, text="Graph traversal", command= btn_push(sortingVisualze.main ))
+btn_traversal.pack()
 
 root.mainloop()
