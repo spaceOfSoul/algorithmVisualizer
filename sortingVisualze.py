@@ -1,6 +1,7 @@
 import pygame as pg
 import random
 
+pg.init()
 class DrawInformation:
     BLACK = 0,0,0
     WHITE = 255,255,255
@@ -41,8 +42,8 @@ def draw(draw_info : DrawInformation,algo_name,frame, ascending):
     control = draw_info.FONT.render("R - Reroll | SPACE - Start sorting | A - ascending and descending",1,draw_info.WHITE)
     draw_info.window.blit(control, (draw_info.width/2 - control.get_width()/2+250 ,5))
     
-    sortings = draw_info.FONT.render("I - Insertion Sort | B - Bubble sort | Q - Qucik sort | M - Merge sort",1,draw_info.WHITE)
-    draw_info.window.blit(sortings, (draw_info.width/2 - sortings.get_width()/2+250 ,35))
+    sortings = draw_info.FONT.render("I - Insertion Sort | B - Bubble sort | Q - Qucik sort | M - Merge sort | S - Selection sort",1,draw_info.WHITE)
+    draw_info.window.blit(sortings, (draw_info.width/2 - sortings.get_width()/2+180 ,35))
     
     item_amount = draw_info.LARGE_FONT.render(f"Item amount : {draw_info.n}",1,draw_info.WHITE)
     draw_info.window.blit(item_amount, (draw_info.width/2 - title.get_width()/2-350 ,65))
@@ -184,9 +185,21 @@ def merge_sort(draw_info, acsending = True):
     buff = [None]*n
     yield _merge_sort(0,n-1)
     
+def selection_sort(draw_info, acsending = True):
+    lst = draw_info.lst
+    n = len(lst)
+    for i in range(n-1):
+        least = i
+        for j in range(i+1, n):
+            if lst[j] < lst[least]:
+                least = j
+    
+        if i != least:
+            lst[i], lst[least] = lst[least], lst[i]
+            draw_list(draw_info,lst, {i: draw_info.GREEN, least : draw_info.RED}, True)
+            yield True
 
 def main():
-    pg.init()
     run = True
     clock = pg.time.Clock()
     
@@ -251,6 +264,9 @@ def main():
             elif event.key == pg.K_m and not sorting:
                 sorting_algorithm = merge_sort
                 sorting_algorithm_name = "Merge_sort"
+            elif event.key == pg.K_s and not sorting:
+                sorting_algorithm = selection_sort
+                sorting_algorithm_name = "Selection_sort"
             elif event.key == pg.K_UP and not sorting:
                 frame+=30
             elif event.key == pg.K_DOWN and not sorting:
