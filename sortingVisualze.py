@@ -1,7 +1,10 @@
-import pygame as pg
 import random
+import pygame as pg
+import sys
+print(sys.setrecursionlimit(10**5))
 
 pg.init()
+
 class DrawInformation:
     BLACK = 0,0,0
     WHITE = 255,255,255
@@ -17,7 +20,7 @@ class DrawInformation:
     def __init__(self, width, hegit, lst):
         self.width = width
         self.height = hegit
-        self.window = pg.display.set_mode((width,hegit))
+        self.window = pg.display.set_mode((width,hegit), flags=pg.DOUBLEBUF)
         pg.display.set_caption("sorting algorithm Visualization")
         self.set_list(lst)
     
@@ -30,31 +33,32 @@ class DrawInformation:
         self.block_height = (self.height - self.TOP_PAD) / self.n
         self.start_x = self.SIDE_PAD //2
         
-def draw(draw_info : DrawInformation,algo_name,frame, ascending):
+def draw(draw_info : DrawInformation,algo_name,frame, ascending, hidden = False):
     draw_info.window.fill(draw_info.BACKGROUNDCOLOR)
     
-    title = draw_info.LARGE_FONT.render(f"{algo_name} - {'ascending' if ascending else 'descending'}",1,draw_info.WHITE)
-    draw_info.window.blit(title, (draw_info.width/2 - title.get_width()/2-350 ,5))
+    if not hidden:
+        title = draw_info.LARGE_FONT.render(f"{algo_name} - {'ascending' if ascending else 'descending'}",1,draw_info.WHITE)
+        draw_info.window.blit(title, (draw_info.width/2 - title.get_width()/2-350 ,5))
     
-    speed = draw_info.LARGE_FONT.render(f"Speed x{frame/60}",1,draw_info.WHITE)
-    draw_info.window.blit(speed, (draw_info.width/2 - title.get_width()/2-350 ,35))
+        speed = draw_info.LARGE_FONT.render(f"Speed x{frame/60}",1,draw_info.WHITE)
+        draw_info.window.blit(speed, (draw_info.width/2 - title.get_width()/2-350 ,35))
     
-    control = draw_info.FONT.render("R - Reroll | SPACE - Start sorting | A - ascending and descending",1,draw_info.WHITE)
-    draw_info.window.blit(control, (draw_info.width/2 - control.get_width()/2+250 ,5))
+        control = draw_info.FONT.render("R - Reroll | SPACE - Start sorting | A - ascending and descending",1,draw_info.WHITE)
+        draw_info.window.blit(control, (draw_info.width/2 - control.get_width()/2+250 ,5))
     
-    sortings = draw_info.FONT.render("I - Insertion Sort | B - Bubble sort | Q - Qucik sort | M - Merge sort | S - Selection sort",1,draw_info.WHITE)
-    draw_info.window.blit(sortings, (draw_info.width/2 - sortings.get_width()/2+180 ,35))
+        sortings = draw_info.FONT.render("I - Insertion Sort | B - Bubble sort | Q - Qucik sort | M - Merge sort | S - Selection sort",1,draw_info.WHITE)
+        draw_info.window.blit(sortings, (draw_info.width/2 - sortings.get_width()/2+180 ,35))
     
-    item_amount = draw_info.LARGE_FONT.render(f"Item amount : {draw_info.n}",1,draw_info.WHITE)
-    draw_info.window.blit(item_amount, (draw_info.width/2 - title.get_width()/2-350 ,65))
+        item_amount = draw_info.LARGE_FONT.render(f"Item amount : {draw_info.n}",1,draw_info.WHITE)
+        draw_info.window.blit(item_amount, (draw_info.width/2 - title.get_width()/2-350 ,65))
     
     draw_list(draw_info, draw_info.lst)
     pg.display.update()
     
 def draw_list(draw_info : DrawInformation, lst, color_position={}, clear_bg=False):
-    
+    UNDER = 10
     if clear_bg:
-        clear_rect = (draw_info.SIDE_PAD//2, draw_info.TOP_PAD, 
+        clear_rect = (draw_info.SIDE_PAD//2, draw_info.TOP_PAD-UNDER, 
                       draw_info.width - draw_info.SIDE_PAD, draw_info.height - draw_info.TOP_PAD)
         pg.draw.rect(draw_info.window, draw_info.BACKGROUNDCOLOR, clear_rect)
     
@@ -67,7 +71,7 @@ def draw_list(draw_info : DrawInformation, lst, color_position={}, clear_bg=Fals
         if i in color_position:
             color = color_position[i]
         
-        pg.draw.rect(draw_info.window, color, (x, y, draw_info.block_width, draw_info.height))
+        pg.draw.rect(draw_info.window, color, (x, y-UNDER, draw_info.block_width, draw_info.height-UNDER))
     
     if clear_bg:
         pg.display.update()
@@ -191,7 +195,7 @@ def selection_sort(draw_info, acsending = True):
     for i in range(n-1):
         least = i
         for j in range(i+1, n):
-            if lst[j] < lst[least]:
+            if (lst[j] < lst[least] and acsending) or (lst[j] > lst[least] and not acsending):
                 least = j
     
         if i != least:
@@ -211,6 +215,8 @@ def main():
     ascending = True
     frame = 60
     
+    HIDDEN = False
+    
     sorting_algorithm = bubble_sort
     sorting_algorithm_name = "Bubble_sort"
     sorting_algorithm_generator = None
@@ -224,7 +230,7 @@ def main():
             except StopIteration:
                 sorting = False
         else:
-            draw(draw_info, sorting_algorithm_name,frame, ascending)
+            draw(draw_info, sorting_algorithm_name,frame, ascending, HIDDEN)
         
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -271,6 +277,8 @@ def main():
                 frame+=30
             elif event.key == pg.K_DOWN and not sorting:
                 frame-=30
+            elif event.key == pg.K_h and not sorting:
+                HIDDEN = not HIDDEN
       
     pg.quit()
 
