@@ -37,20 +37,28 @@ def draw(draw_info : DrawInformation,algo_name,frame, ascending, hidden = False)
     draw_info.window.fill(draw_info.BACKGROUNDCOLOR)
     
     if not hidden:
+        #left Title
         title = draw_info.LARGE_FONT.render(f"{algo_name} - {'ascending' if ascending else 'descending'}",1,draw_info.WHITE)
         draw_info.window.blit(title, (draw_info.width/2 - title.get_width()/2-350 ,5))
     
         speed = draw_info.LARGE_FONT.render(f"Speed x{frame/60}",1,draw_info.WHITE)
         draw_info.window.blit(speed, (draw_info.width/2 - title.get_width()/2-350 ,35))
-    
+        
+        item_amount = draw_info.LARGE_FONT.render(f"Item amount : {draw_info.n}",1,draw_info.WHITE)
+        draw_info.window.blit(item_amount, (draw_info.width/2 - title.get_width()/2-350 ,65))
+
+        #right
         control = draw_info.FONT.render("R - Reroll | SPACE - Start sorting | A - ascending and descending",1,draw_info.WHITE)
         draw_info.window.blit(control, (draw_info.width/2 - control.get_width()/2+250 ,5))
     
         sortings = draw_info.FONT.render("I - Insertion Sort | B - Bubble sort | Q - Qucik sort | M - Merge sort | S - Selection sort",1,draw_info.WHITE)
-        draw_info.window.blit(sortings, (draw_info.width/2 - sortings.get_width()/2+180 ,35))
-    
-        item_amount = draw_info.LARGE_FONT.render(f"Item amount : {draw_info.n}",1,draw_info.WHITE)
-        draw_info.window.blit(item_amount, (draw_info.width/2 - title.get_width()/2-350 ,65))
+        draw_info.window.blit(sortings, (draw_info.width/2 - sortings.get_width()/2+180 ,25))
+        
+        orderKeys = draw_info.FONT.render("H - Hide UI | Number keys - List amount adjust | Up, Down Arrows - Incease and Decrease list amount",1,draw_info.WHITE)
+        draw_info.window.blit(orderKeys, (draw_info.width/2 - orderKeys.get_width()/2+115 ,45))
+        
+        speedkeys = draw_info.FONT.render("F3 - speed /2 | F4 - speed x2",1,draw_info.WHITE)
+        draw_info.window.blit(speedkeys, (draw_info.width/2 - speedkeys.get_width()/2 +385 ,65))
     
     draw_list(draw_info, draw_info.lst)
     pg.display.update()
@@ -189,6 +197,9 @@ def merge_sort(draw_info, acsending = True):
     buff = [None]*n
     yield _merge_sort(0,n-1)
     
+numkeys = {pg.K_1:100, pg.K_2:200, pg.K_3:300, pg.K_4:400, pg.K_5:500,
+           pg.K_6:600, pg.K_7:700, pg.K_8:800, pg.K_9:900}
+
 def selection_sort(draw_info, acsending = True):
     lst = draw_info.lst
     n = len(lst)
@@ -243,13 +254,18 @@ def main():
                 lst = generate_starting_list(n)
                 draw_info.set_list(lst)
                 sorting = False
-            elif event.key == pg.K_F3:
+            elif event.key == pg.K_UP:
                 n-=5
                 lst = generate_starting_list(n)
                 draw_info.set_list(lst)
                 sorting = False
-            elif event.key == pg.K_F4:
+            elif event.key == pg.K_DOWN:
                 n+=5
+                lst = generate_starting_list(n)
+                draw_info.set_list(lst)
+                sorting = False
+            elif event.key in numkeys:
+                n = numkeys[event.key]
                 lst = generate_starting_list(n)
                 draw_info.set_list(lst)
                 sorting = False
@@ -273,10 +289,11 @@ def main():
             elif event.key == pg.K_s and not sorting:
                 sorting_algorithm = selection_sort
                 sorting_algorithm_name = "Selection_sort"
-            elif event.key == pg.K_UP and not sorting:
+            elif event.key == pg.K_F4 and not sorting:
                 frame+=30
-            elif event.key == pg.K_DOWN and not sorting:
-                frame-=30
+            elif event.key == pg.K_F3 and not sorting:
+                if(frame-30 >=30):
+                    frame-=30
             elif event.key == pg.K_h and not sorting:
                 HIDDEN = not HIDDEN
       
