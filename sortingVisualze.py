@@ -197,6 +197,91 @@ def merge_sort(draw_info, acsending = True):
     buff = [None]*n
     yield _merge_sort(0,n-1)
     
+def shaker_sort(draw_info, ascending=True):
+    lst = draw_info.lst
+    length = len(lst)
+    swapped = True
+    start = 0
+    end = length - 1
+    
+    while swapped:
+        swapped = False
+        for i in range(start, end):
+            if (lst[i] > lst[i + 1] and ascending) or (lst[i] < lst[i + 1] and not ascending):
+                lst[i], lst[i + 1] = lst[i + 1], lst[i]
+                draw_list(draw_info, lst, {i: draw_info.GREEN, i + 1: draw_info.RED}, True)
+                swapped = True
+                yield True
+        
+        if not swapped:
+            break
+        
+        swapped = False
+        end -= 1
+        
+        for i in range(end - 1, start - 1, -1):
+            if (lst[i] > lst[i + 1] and ascending) or (lst[i] < lst[i + 1] and not ascending):
+                lst[i], lst[i + 1] = lst[i + 1], lst[i]
+                draw_list(draw_info, lst, {i: draw_info.GREEN, i + 1: draw_info.RED}, True)
+                swapped = True
+                yield True
+        
+        start += 1
+    
+    return lst
+
+def shell_sort(draw_info, ascending=True):
+    lst = draw_info.lst
+    length = len(lst)
+    gap = length // 2
+    
+    while gap > 0:
+        for i in range(gap, length):
+            temp = lst[i]
+            j = i
+            while j >= gap and ((lst[j - gap] > temp and ascending) or (lst[j - gap] < temp and not ascending)):
+                lst[j] = lst[j - gap]
+                draw_list(draw_info, lst, {j: draw_info.GREEN, j - gap: draw_info.RED}, True)
+                j -= gap
+                yield True
+            lst[j] = temp
+        
+        gap //= 2
+    
+    return lst
+
+def heap_sort(draw_info, ascending=True):
+    lst = draw_info.lst
+    length = len(lst)
+    
+    def heapify(n, i):
+        largest = i
+        left = 2 * i + 1
+        right = 2 * i + 2
+        
+        if left < n and ((lst[left] > lst[largest] and ascending) or (lst[left] < lst[largest] and not ascending)):
+            largest = left
+        
+        if right < n and ((lst[right] > lst[largest] and ascending) or (lst[right] < lst[largest] and not ascending)):
+            largest = right
+        
+        if largest != i:
+            lst[i], lst[largest] = lst[largest], lst[i]
+            draw_list(draw_info, lst, {i: draw_info.GREEN, largest: draw_info.RED}, True)
+            yield True
+            yield from heapify(n, largest)
+    
+    for i in range(length // 2 - 1, -1, -1):
+        yield from heapify(length, i)
+    
+    for i in range(length - 1, 0, -1):
+        lst[i], lst[0] = lst[0], lst[i]
+        draw_list(draw_info, lst, {i: draw_info.GREEN, 0: draw_info.RED}, True)
+        yield True
+        yield from heapify(i, 0)
+    
+    return lst
+
 numkeys = {pg.K_1:100, pg.K_2:200, pg.K_3:300, pg.K_4:400, pg.K_5:500,
            pg.K_6:600, pg.K_7:700, pg.K_8:800, pg.K_9:900}
 
@@ -289,6 +374,15 @@ def main():
             elif event.key == pg.K_s and not sorting:
                 sorting_algorithm = selection_sort
                 sorting_algorithm_name = "Selection_sort"
+            elif event.key == pg.K_k and not sorting:
+                sorting_algorithm = shaker_sort
+                sorting_algorithm_name = "Shaker_sort"
+            elif event.key == pg.K_h and not sorting:
+                sorting_algorithm = heap_sort
+                sorting_algorithm_name = "Heap_sort"
+            elif event.key == pg.K_l and not sorting:
+                sorting_algorithm = shell_sort
+                sorting_algorithm_name = "Shell_sort"
             elif event.key == pg.K_F4 and not sorting:
                 frame+=30
             elif event.key == pg.K_F3 and not sorting:
